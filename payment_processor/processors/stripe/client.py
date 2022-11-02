@@ -1,6 +1,8 @@
 import typing
+
 import stripe
 
+from payment_processor.processors import exceptions as payment_processor_exceptions
 from payment_processor.processors.stripe import constants as stripe_constants
 
 
@@ -47,6 +49,6 @@ class StripeClient:
 
         else:
             msg = "Failed creating payment intent with status: {}".format(intent.status)
-            raise exceptions.StripeClientException(msg)
+            raise payment_processor_exceptions.StripeClientException(msg)
 
         return (requires_action, payment_intent_client_secret)

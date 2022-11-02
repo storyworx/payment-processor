@@ -14,5 +14,5 @@ class BaseProcessor:
     ) -> dict:
         raise NotImplementedError
 
-    def process_payment(self):
+    def process_payment(self, user: int, txid: str):
         raise NotImplementedError

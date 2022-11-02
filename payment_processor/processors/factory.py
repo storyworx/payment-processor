@@ -1,6 +1,5 @@
-from payment_processor.processors.stripe.processor import Stripe
-
 from payment_processor import constants
+from payment_processor.processors.stripe.processor import Stripe
 
 PAYMENT_PROCESSORS_MAPPING = {
     constants.PaymentType.CREDIT_CARD: Stripe,

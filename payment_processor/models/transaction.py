@@ -1,9 +1,10 @@
-from payment_processor import constants
+import uuid
 
 from django.db import models
 from django.db.models import CheckConstraint, Q
 
-import uuid
+from payment_processor import constants
+
 
 class Transaction(models.Model):
     txid = models.UUIDField(
