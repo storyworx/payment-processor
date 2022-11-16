@@ -1,6 +1,8 @@
-from core import settings
+from django.conf import settings
+from django.db import transaction
+
 from payment_processor import constants
-from payment_processor.models import Transaction
+from payment_processor import models as payment_processor_models
 from payment_processor.processors.base.processor import BaseProcessor
 from payment_processor.processors.stripe import client as stripe_client
 
@@ -16,33 +18,38 @@ class Stripe(BaseProcessor):
 
     def init_payment(
         self,
-        user,
+        user_id,
         base_amount,
         quote_amount,
         base_currency,
         quote_currency,
-        payment_type: constants.PaymentType,
+        payment_type: str,
         transaction_type: constants.TransactionType,
     ):
 
-        external_id, client_secret = self.client.create_payment_intent(
-            base_amount, base_currency
-        )
+        with transaction.atomic():
+            external_id, client_secret = self.client.create_payment_intent(
+                base_amount, base_currency
+            )
 
-        Transaction.objects.create(
-            buyer=user,
-            payment_type=payment_type,
-            transaction_type=transaction_type,
-            status=constants.TransactionStatus.INITIALIZED,
-            base_currency=base_currency,
-            quote_currency=quote_currency,
-            base_amount=base_amount,
-            quote_amount=quote_amount,
-            external_id=external_id,
-        )
+            payment_type = constants.PaymentType[payment_type]
+
+            payment_processor_models.Transaction.objects.create(
+                buyer=user_id,
+                payment_type=payment_type,
+                transaction_type=transaction_type,
+                status=constants.TransactionStatus.INITIALIZED,
+                base_currency=base_currency,
+                quote_currency=quote_currency,
+                base_amount=base_amount,
+                quote_amount=quote_amount,
+                external_id=external_id,
+            )
 
         return {"client_secret": client_secret}
 
-    def process_payment(self, user, txid):
-
-        pass
+    def process_payment(self, txid):
+        transaction = payment_processor_models.Transaction.objects.filter(
+            txid=txid
+        ).first()
+        transaction.update(status=constants.TransactionStatus.SUCCEEDED)

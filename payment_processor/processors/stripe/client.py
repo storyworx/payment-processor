@@ -17,12 +17,14 @@ class StripeClient:
         self,
         amount: float,
         currency: str,
+        txid: str,
     ) -> typing.Tuple[bool, str]:
 
         intent = stripe.PaymentIntent.create(
             amount=amount * 100,
             currency=currency,
             payment_method_types=["card"],
+            metadata={"txid": txid},
         )
 
         return (intent.id, intent.client_secret)

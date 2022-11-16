@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: Payment processor API
+  version: 1.0.0
+  description: Payment processing microservice handles transactions
+paths:
+  /api/payment-request/:
+    get:
+      operationId: api_payment_request_retrieve
+      description: Get payment requests
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequest'
+          description: ''
+    post:
+      operationId: api_payment_request_create
+      description: Send 'transfer_amount' of tokens to user with id='source_pk'.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequest'
+          description: ''
+components:
+  schemas:
+    PaymentRequest:
+      type: object
+      properties:
+        buyer:
+          type: integer
+        seller:
+          type: integer
+        payment_type:
+          type: string
+        transaction_type:
+          type: string
+        status:
+          type: string
+        base_currency:
+          type: string
+        quote_currency:
+          type: string
+        base_amount:
+          type: number
+          format: double
+          minimum: 0
+      required:
+      - base_amount
+      - base_currency
+      - buyer
+      - payment_type
+      - quote_currency
+      - seller
+      - status
+      - transaction_type
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

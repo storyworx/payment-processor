@@ -6,7 +6,12 @@ PAYMENT_PROCESSORS_MAPPING = {
 }
 
 
-def get_processor(payment_type: constants.PaymentType):
+def get_processor(payment_type: str):
+    try:
+        payment_type = constants.PaymentType[payment_type]
+    except KeyError:
+        return None
+
     processor = PAYMENT_PROCESSORS_MAPPING.get(payment_type)
     if not processor:
         return None

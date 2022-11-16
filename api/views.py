@@ -1,20 +1,23 @@
 from rest_framework import status, views
 from rest_framework.decorators import permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny  # , IsAuthenticated
 from rest_framework.response import Response
 
 from api import serializers
+from payment_processor import constants as payment_processor_constants
+from payment_processor import models as payment_proccessor_models
+from payment_processor.processors import factory as payment_processor_factory
 
-# from payment_processor import constants as payment_processor_constants
 
-
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 class PaymentRequestView(views.APIView):
-    """Send 'transfer_amount' of tokens to user with id='source_pk'."""
+    """Payment request endpoint"""
 
     serializer_class = serializers.PaymentRequestSerializer
 
     def post(self, request):
+        """Send 'transfer_amount' of tokens to user with id='source_pk'."""
+
         serializer = self.serializer_class(
             context={"request": request}, data=request.data
         )
@@ -25,38 +28,44 @@ class PaymentRequestView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # data = serializer.validated_data
+        data = serializer.validated_data
+        user_id = data["buyer"]
+        amount = data["base_amount"]
+        token_code = data["quote_currency"]
+        currency = data["base_currency"]
+        payment_type = data["payment_type"]
 
-        # user = data["user_id"]
-        # payment_type = payment_processor_constants.PaymentType[data["payment_type"]]
-        # amount = data["amount"]
-        # token_code = data["quote_currency"]
-        # currency = data["base_currency"]
+        quote_amount = amount  # TODO: get amount from token service
 
-        # token = Token.objects.get(token_code=token_code)
-        # quote_amount = amount / token.price
+        payment_service = payment_processor_factory.get_processor(payment_type)
 
-        # payment_service = payment_factory.PAYMENT_SERVICES[payment_type]()
+        client_transaction_data = payment_service.init_payment(
+            user=user_id,
+            base_amount=amount,
+            quote_amount=quote_amount,
+            base_currency=currency,
+            quote_currency=token_code,
+            payment_type=payment_type,
+            transaction_type=payment_processor_constants.TransactionType.BUY,
+        )
 
-        # client_transaction_data = payment_service.init_payment(
-        #     user=user,
-        #     base_amount=amount,
-        #     quote_amount=quote_amount,
-        #     base_currency=currency,
-        #     quote_currency=token_code,
-        #     payment_type=payment_type,
-        #     transaction_type=payment_processor_constants.TransactionType.BUY,
-        # )
+        return Response(
+            client_transaction_data,
+            status=status.HTTP_200_OK,
+        )
 
-        # return Response(
-        #     client_transaction_data,
-        #     status=status.HTTP_200_OK,
-        # )
+    def get(self, request):
+        """Get payment requests"""
+        models = payment_proccessor_models.Transaction.objects.all()
+        serializer = self.serializer_class(models, many=True)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
 
 
 @permission_classes([AllowAny])
 class ProcessStripePaymentView(views.APIView):
-    """Send 'transfer_amount' of tokens to user with id='source_pk'."""
 
     serializer_class = serializers.ProcessStripePaymentSerializer
 

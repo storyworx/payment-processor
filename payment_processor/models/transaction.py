@@ -14,16 +14,12 @@ class Transaction(models.Model):
     external_id = models.CharField(max_length=50, blank=True, null=True, unique=True)
 
     buyer = models.IntegerField(
-        on_delete=models.CASCADE,
         blank=False,
         null=False,
-        related_name="buy_transaction",
     )
     seller = models.IntegerField(
-        on_delete=models.CASCADE,
         blank=True,
         null=True,
-        related_name="sell_transaction",
     )
     payment_type = models.CharField(
         max_length=50,

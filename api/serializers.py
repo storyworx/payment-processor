@@ -2,11 +2,17 @@ from rest_framework import serializers
 
 
 class PaymentRequestSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField(write_only=True, required=True)
-    payment_type = serializers.CharField(write_only=True, required=True)
-    base_currency = serializers.CharField(write_only=True, required=True)
-    quote_currency = serializers.CharField(write_only=True, required=True)
-    amount = serializers.FloatField(write_only=True, required=True, min_value=0)
+    buyer = serializers.IntegerField(required=True)
+    seller = serializers.IntegerField(required=True)
+    payment_type = serializers.CharField(required=True)
+    transaction_type = serializers.CharField(required=True)
+    status = serializers.CharField(required=True)
+    base_currency = serializers.CharField(required=True)
+    quote_currency = serializers.CharField(required=True)
+    base_amount = serializers.FloatField(required=True, min_value=0)
+
+    class Meta:
+        read_only_fields = ("seller", "transaction_type", "status")
 
 
 class ProcessStripePaymentSerializer(serializers.Serializer):
