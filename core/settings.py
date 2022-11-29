@@ -31,7 +31,7 @@ SECRET_KEY = "django-insecure-vwh6ab#bd3c5-%&zf%o%6m%i7i23y-_5nhpt3&u@4vdu+k=o8@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["0.0.0.0", "localhost"]
+ALLOWED_HOSTS = ["0.0.0.0", "localhost", os.environ.get("HOST")]
 
 
 # Application definition
@@ -153,3 +153,8 @@ SPECTACULAR_SETTINGS = {
     "PREPROCESSING_HOOKS": ["core.utils.spectacular_hooks.preprocessing_filter_spec"],
     # OTHER SETTINGS
 }
+
+if os.environ["RELEASE_STAGE"] == "dev":
+    from conf.dev.settings import *
+elif os.environ["RELEASE_STAGE"] == "prod":
+    from conf.dev.settings import *

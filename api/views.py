@@ -40,7 +40,7 @@ class PaymentRequestView(views.APIView):
         payment_service = payment_processor_factory.get_processor(payment_type)
 
         client_transaction_data = payment_service.init_payment(
-            user=user_id,
+            user_id=user_id,
             base_amount=amount,
             quote_amount=quote_amount,
             base_currency=currency,

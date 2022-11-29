@@ -28,13 +28,14 @@ class Stripe(BaseProcessor):
     ):
 
         with transaction.atomic():
-            external_id, client_secret = self.client.create_payment_intent(
+
+            intent_id, client_secret = self.client.create_payment_intent(
                 base_amount, base_currency
             )
 
             payment_type = constants.PaymentType[payment_type]
 
-            payment_processor_models.Transaction.objects.create(
+            tx = payment_processor_models.Transaction.objects.create(
                 buyer=user_id,
                 payment_type=payment_type,
                 transaction_type=transaction_type,
@@ -43,8 +44,10 @@ class Stripe(BaseProcessor):
                 quote_currency=quote_currency,
                 base_amount=base_amount,
                 quote_amount=quote_amount,
-                external_id=external_id,
+                external_id=intent_id,
             )
+
+            self.client.add_payment_intent_metadata(intent_id, {"txit": tx.txid})
 
         return {"client_secret": client_secret}
 

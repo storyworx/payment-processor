@@ -17,17 +17,18 @@ class StripeClient:
         self,
         amount: float,
         currency: str,
-        txid: str,
     ) -> typing.Tuple[bool, str]:
 
         intent = stripe.PaymentIntent.create(
-            amount=amount * 100,
+            amount=int(amount * 100),
             currency=currency,
             payment_method_types=["card"],
-            metadata={"txid": txid},
         )
 
         return (intent.id, intent.client_secret)
+
+    def add_payment_intent_metadata(self, id: str, metadata: dict):
+        stripe.PaymentIntent.modify(id, metadata=metadata)
 
     def confirm_payment_intent(self, payment_intent_id: str) -> typing.Tuple[bool, str]:
         intent = stripe.PaymentIntent.confirm(

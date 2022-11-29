@@ -1,7 +1,7 @@
 import enum
 
 
-class ExtendedEnum(enum.Enum):
+class ExtendedIntEnum(enum.IntEnum):
     @classmethod
     def list_values(cls):
         return list(map(lambda c: c.value, cls))
@@ -14,36 +14,69 @@ class ExtendedEnum(enum.Enum):
         return item in cls.__members__
 
 
-class PaymentType(ExtendedEnum):
+class StringEnum(str, enum.Enum):
+    @classmethod
+    def list_values(cls):
+        return list(map(lambda c: c.value, cls))
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c, cls))
+
+    def __contains__(cls, item):
+        return item in cls.__members__
+
+    @classmethod
+    def get_description(cls):
+        return NotImplementedError
+
+    @classmethod
+    def choices(cls):
+        return [(choice.value, choice.get_description()) for choice in cls]
+
+
+class PaymentType(StringEnum):
     CREDIT_CARD = "CREDIT_CARD"
 
+    def get_description(self):
+        _descriptions = {
+            self.CREDIT_CARD.value: "Credit card",
+        }
 
-PAYMENT_TYPES = ((PaymentType.CREDIT_CARD, "Credit Card"),)
+        return _descriptions.get(self)
 
 
-class TransactionType(ExtendedEnum):
+class TransactionType(StringEnum):
     BUY = "BUY"
     SELL = "SELL"
     EXCHANGE = "EXCHANGE"
+    MINT = "MINT"
+
+    def get_description(self):
+        _descriptions = {
+            self.BUY.value: "Buy",
+            self.SELL.value: "Sell",
+            self.EXCHANGE.value: "Exchange",
+            self.MINT.value: "Mint",
+        }
+
+        return _descriptions.get(self)
 
 
-TRANSACTION_TYPES = (
-    (TransactionType.BUY, "Buy"),
-    (TransactionType.SELL, "Sell"),
-    (TransactionType.EXCHANGE, "Exchange"),
-)
+class TransactionStatus(StringEnum):
+    INITIALIZED = "INITIALIZED"
+    REQUIRES_AUTHORIZATION = "REQUIRES_AUTHORIZATION"
+    SUCCEEDED = "SUCCEDED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
 
+    def get_description(self):
+        _descriptions = {
+            self.INITIALIZED.value: "Initialized",
+            self.REQUIRES_AUTHORIZATION.value: "Requires authorization",
+            self.SUCCEEDED.value: "Succeeded",
+            self.FAILED.value: "Failed",
+            self.CANCELLED.value: "Cancelled",
+        }
 
-class TransactionStatus(ExtendedEnum):
-    INITIALIZED = 1
-    REQUIRES_AUTHORIZATION = 2
-    SUCCEEDED = 3
-    FAILED = 4
-    CANCELLED = 5
-
-
-TRANSACTION_STATUSES = (
-    (TransactionStatus.INITIALIZED, "Initialized"),
-    (TransactionStatus.SUCCEEDED, "Succeeded"),
-    (TransactionStatus.REQUIRES_AUTHORIZATION, "Requires authorization"),
-)
+        return _descriptions.get(self)

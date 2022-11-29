@@ -25,19 +25,19 @@ class Transaction(models.Model):
         max_length=50,
         blank=False,
         null=False,
-        choices=constants.PAYMENT_TYPES,
+        choices=constants.PaymentType.choices(),
     )
     transaction_type = models.CharField(
         max_length=50,
         blank=False,
         null=False,
-        choices=constants.TRANSACTION_TYPES,
+        choices=constants.TransactionType.choices(),
     )
     status = models.CharField(
         max_length=50,
         blank=False,
         null=False,
-        choices=constants.TRANSACTION_STATUSES,
+        choices=constants.TransactionStatus.choices(),
     )
     base_currency = models.CharField(max_length=100, blank=False, null=False)
     quote_currency = models.CharField(max_length=100, blank=False, null=False)

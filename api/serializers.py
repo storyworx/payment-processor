@@ -3,10 +3,10 @@ from rest_framework import serializers
 
 class PaymentRequestSerializer(serializers.Serializer):
     buyer = serializers.IntegerField(required=True)
-    seller = serializers.IntegerField(required=True)
+    seller = serializers.IntegerField(default=None)
     payment_type = serializers.CharField(required=True)
-    transaction_type = serializers.CharField(required=True)
-    status = serializers.CharField(required=True)
+    transaction_type = serializers.CharField(default=None)
+    status = serializers.CharField(default=None)
     base_currency = serializers.CharField(required=True)
     quote_currency = serializers.CharField(required=True)
     base_amount = serializers.FloatField(required=True, min_value=0)
