@@ -20,6 +20,7 @@ RUN apt-get update && apt-get -y install default-libmysqlclient-dev
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 ADD . /app
+COPY /app/conf/prod/.env-docker /app/.env
 WORKDIR /app
 
 # Run the application:
