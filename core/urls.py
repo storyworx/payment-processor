@@ -22,7 +22,11 @@ from core import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("api.urls")),
-    re_path(r"^api-docs/?$", views.ApiDocs.as_view(), name="api-docs"),
+    re_path(
+        r"^payment-processor/api/v1/api-docs/?$",
+        views.ApiDocs.as_view(),
+        name="api-docs",
+    ),
+    re_path(r"^payment-processor/api/v1/?", include("api.urls")),
     re_path(r"^healthcheck/?$", views.Healthcheck.as_view(), name="healthcheck"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
