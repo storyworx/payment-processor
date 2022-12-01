@@ -29,9 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-vwh6ab#bd3c5-%&zf%o%6m%i7i23y-_5nhpt3&u@4vdu+k=o8@"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ["RELEASE_STAGE"] == "dev"
 
-ALLOWED_HOSTS = ["0.0.0.0", "localhost", os.environ.get("HOST")]
+ALLOWED_HOSTS = ["0.0.0.0", "localhost", "storyworx.co", os.environ.get("HOST")]
 
 
 # Application definition
@@ -47,9 +47,11 @@ INSTALLED_APPS = [
     "core",
     "api",
     "payment_processor",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
+    "core.middlewares.HealthCheckMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -143,6 +145,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
