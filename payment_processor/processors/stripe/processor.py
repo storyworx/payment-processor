@@ -8,6 +8,8 @@ from payment_processor.processors.stripe import client as stripe_client
 
 
 class Stripe(BaseProcessor):
+    LOGGER_PREFIX = "[STRIPE-PROCESSOR]"
+
     def __init__(self) -> None:
         self.client = self._init_client()
 
@@ -33,6 +35,8 @@ class Stripe(BaseProcessor):
                 base_amount, base_currency
             )
 
+            self.log(f"Payment intent (id={intent_id}) created.")
+
             payment_type = constants.PaymentType[payment_type]
 
             tx = payment_processor_models.Transaction.objects.create(
@@ -47,7 +51,13 @@ class Stripe(BaseProcessor):
                 external_id=intent_id,
             )
 
+            self.log(f"Transaction (id={tx.txid}) {tx.status.get_description()}.")
+
             self.client.add_payment_intent_metadata(intent_id, {"txit": tx.txid})
+
+            self.log(
+                f"Payment intent (id={intent_id}) updated with transaction metadata"
+            )
 
         return {"client_secret": client_secret}
 

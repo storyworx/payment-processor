@@ -1,7 +1,13 @@
+import logging
+
 from payment_processor import constants
+
+logger = logging.getLogger(__name__)
 
 
 class BaseProcessor:
+    LOGGER_PREFIX = "[BASE-PROCESSOR]"
+
     def init_payment(
         self,
         user: int,
@@ -16,3 +22,11 @@ class BaseProcessor:
 
     def process_payment(self, user: int, txid: str):
         raise NotImplementedError
+
+    def log(self, message, log_type="info"):
+        if log_type == "warning":
+            logger.warning(f"{self.LOGGER_PREFIX} {message}")
+        elif log_type == "error":
+            logger.error(f"{self.LOGGER_PREFIX} {message}")
+        else:
+            logger.info(f"{self.LOGGER_PREFIX} {message}")

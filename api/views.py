@@ -1,3 +1,6 @@
+import json
+import logging
+
 from rest_framework import status, views
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny  # , IsAuthenticated
@@ -7,6 +10,8 @@ from api import serializers
 from payment_processor import constants as payment_processor_constants
 from payment_processor import models as payment_proccessor_models
 from payment_processor.processors import factory as payment_processor_factory
+
+logger = logging.getLogger(__name__)
 
 
 @permission_classes([AllowAny])
@@ -29,6 +34,9 @@ class PaymentRequestView(views.APIView):
             )
 
         data = serializer.validated_data
+
+        logger.info(f"Payment request submitted: {json.dumps(data, indent=2)}")
+
         user_id = data["buyer"]
         amount = data["base_amount"]
         token_code = data["quote_currency"]
