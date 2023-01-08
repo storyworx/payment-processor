@@ -8,4 +8,9 @@ urlpatterns = [
         views.PaymentRequestView.as_view(),
         name="payment-request",
     ),
+    re_path(
+        r"^braintree-client-token/?$",
+        views.BraintreeClientToken.as_view(),
+        name="braintree-client-token",
+    ),
 ]

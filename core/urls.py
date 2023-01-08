@@ -14,19 +14,32 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls.static import static
-from django.contrib import admin
 from django.urls import include, path, re_path
 
 from core import views
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    re_path(
-        r"^payment-processor/api/v1/api-docs/?$",
-        views.ApiDocs.as_view(),
-        name="api-docs",
-    ),
-    re_path(r"^payment-processor/api/v1/?", include("api.urls")),
     re_path(r"^healthcheck/?$", views.Healthcheck.as_view(), name="healthcheck"),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    re_path(r"^healthchecks/?", include("health_check.urls"), name="healthchecks"),
+    path("", include("django_prometheus.urls")),
+]
+
+if settings.ROLE == "app":
+    urlpatterns += [
+        re_path(
+            r"^payment-processor/api/v1/api-docs/?$",
+            views.ApiDocs.as_view(),
+            name="api-docs",
+        ),
+        re_path(r"^payment-processor/api/v1/?", include("api.urls")),
+    ]
+
+
+# if settings.ENV == "dev":
+#     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+# elif settings.ENV == "prod":
+#     urlpatterns.append(
+#         re_path(
+#             r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}
+#         )
+#     )

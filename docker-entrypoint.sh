@@ -1,8 +1,5 @@
-# Apply database migrations
-# echo 'Apply database migrations'
-#python manage.py makemigrations
-python manage.py migrate
-
-# Start server
-# echo 'Starting server'
-python manage.py runserver 0.0.0.0:8000
+if [ $ROLE == "server" ]; then
+    /app/bin/run_server.sh
+elif [ $ROLE == "stripe-worker" ]; then
+    /app/bin/run_stripe_worker.sh
+fi

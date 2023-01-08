@@ -12,19 +12,34 @@ services:
     ports:
       - "3306:3306"
 
-  adminer:
-    image: adminer
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
+
+  memcached:
+    image: memcached
     restart: always
     ports:
-      - 8080:8080
+      - 11211:11211
 
-  # # Uncomment this if you wish to run your app in docker as would be in production
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    env_file:
+      - .env
+    command: >
+          --requirepass ${REDIS_PASSWORD}
+
   # app:
   #   build: .
   #   restart: always
   #   ports:
-  #     - "8001:8000"
-  # #  command: /bin/bash -c 'chmod +x /app/docker-entrypoint.sh && /app/docker-entrypoint.sh'
+  #     - "8000:8000"
+  #   command: /bin/bash -c 'chmod +x /app/bin/run_stripe_worker.sh && /app/bin/run_stripe_worker.sh'
   #   env_file:
   #     - conf/dev/.env-docker
   #   depends_on:

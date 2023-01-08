@@ -1,8 +1,10 @@
 from payment_processor import constants
+from payment_processor.processors.braintree.processor import Braintree
 from payment_processor.processors.stripe.processor import Stripe
 
 PAYMENT_PROCESSORS_MAPPING = {
     constants.PaymentType.CREDIT_CARD: Stripe,
+    constants.PaymentType.PAYPAL: Braintree,
 }
 
 

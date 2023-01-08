@@ -14,6 +14,8 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 FROM python:${PYTHON_MAJOR_VER}.${PYTHON_MINOR_VER}-slim
 ARG VIRTUAL_ENV
+# ARG role
+# ENV ROLE $role
 
 COPY --from=build ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 RUN apt-get update && apt-get -y install default-libmysqlclient-dev
@@ -23,6 +25,6 @@ ADD . /app
 WORKDIR /app
 COPY conf/prod/.env-docker .env
 
-# Run the application:
-ENTRYPOINT ["/bin/sh"]
-CMD ["docker-entrypoint.sh"]
+# # Run the application:
+# ENTRYPOINT ["/bin/sh"]
+# CMD ["docker-entrypoint.sh"]
