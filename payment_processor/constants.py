@@ -37,10 +37,12 @@ class StringEnum(str, enum.Enum):
 
 class PaymentType(StringEnum):
     CREDIT_CARD = "CREDIT_CARD"
+    PAYPAL = "PAYPAL"
 
     def get_description(self):
         _descriptions = {
             self.CREDIT_CARD.value: "Credit card",
+            self.PAYPAL.value: "Paypal",
         }
 
         return _descriptions.get(self)
@@ -66,7 +68,7 @@ class TransactionType(StringEnum):
 class TransactionStatus(StringEnum):
     INITIALIZED = "INITIALIZED"
     REQUIRES_AUTHORIZATION = "REQUIRES_AUTHORIZATION"
-    SUCCEEDED = "SUCCEDED"
+    SUCCEEDED = "SUCCEEDED"
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
 

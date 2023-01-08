@@ -10,7 +10,7 @@ class BaseProcessor:
 
     def init_payment(
         self,
-        user: int,
+        user_id: int,
         base_amount: float,
         quote_amount: float,
         base_currency: str,
@@ -20,8 +20,13 @@ class BaseProcessor:
     ) -> dict:
         raise NotImplementedError
 
-    def process_payment(self, user: int, txid: str):
+    def process_payment(self, user_id: int, txid: str, status: str):
         raise NotImplementedError
+
+    def make_token_transaction(self, buyer: id, seller: id, amount: int, token: str):
+        from payment_processor.tasks import make_token_transaction
+
+        make_token_transaction.apply_async((buyer, seller, amount, token))
 
     def log(self, message, log_type="info"):
         if log_type == "warning":

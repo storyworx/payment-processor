@@ -4,27 +4,129 @@ info:
   version: 1.0.0
   description: Payment processing microservice handles transactions
 paths:
-  /api/payment-request/:
+  /payment-processor/api/v1/braintree-client-token/:
     get:
-      operationId: api_payment_request_retrieve
-      description: Get payment requests
+      operationId: Get Braintree client token
       tags:
-      - api
+      - Braintree
       security:
       - cookieAuth: []
       - basicAuth: []
+      - {}
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaymentRequest'
+                $ref: '#/components/schemas/BraintreeClientToken'
+          description: ''
+  /payment-processor/api/v1/payment-request/:
+    get:
+      operationId: List all Payment requests
+      description: Get payment requests
+      parameters:
+      - in: query
+        name: base_amount__gte
+        schema:
+          type: number
+          format: float
+      - in: query
+        name: base_amount__lte
+        schema:
+          type: number
+          format: float
+      - in: query
+        name: base_currency
+        schema:
+          type: string
+      - in: query
+        name: buyer
+        schema:
+          type: integer
+      - in: query
+        name: date_changed__gte
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: date_changed__lte
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: date_created__gte
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: date_created__lte
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: payment_type
+        schema:
+          type: string
+          enum:
+          - CREDIT_CARD
+          - PAYPAL
+      - in: query
+        name: quote_amount__gte
+        schema:
+          type: number
+          format: float
+      - in: query
+        name: quote_amount__lte
+        schema:
+          type: number
+          format: float
+      - in: query
+        name: quote_currency
+        schema:
+          type: string
+      - in: query
+        name: seller
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - CANCELLED
+          - FAILED
+          - INITIALIZED
+          - REQUIRES_AUTHORIZATION
+          - SUCCEDED
+      - in: query
+        name: transaction_type
+        schema:
+          type: string
+          enum:
+          - BUY
+          - EXCHANGE
+          - MINT
+          - SELL
+      tags:
+      - PaymentRequest
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentRequest'
           description: ''
     post:
-      operationId: api_payment_request_create
+      operationId: Initialize Payment request
       description: Send 'transfer_amount' of tokens to user with id='source_pk'.
       tags:
-      - api
+      - PaymentRequest
       requestBody:
         content:
           application/json:
@@ -40,6 +142,7 @@ paths:
       security:
       - cookieAuth: []
       - basicAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -49,19 +152,36 @@ paths:
           description: ''
 components:
   schemas:
+    BraintreeClientToken:
+      type: object
+      properties:
+        client_token:
+          type: string
+          readOnly: true
+      required:
+      - client_token
     PaymentRequest:
       type: object
       properties:
+        txid:
+          type: string
+          format: uuid
+          readOnly: true
         buyer:
           type: integer
         seller:
           type: integer
+          readOnly: true
         payment_type:
-          type: string
+          $ref: '#/components/schemas/PaymentTypeEnum'
         transaction_type:
-          type: string
+          allOf:
+          - $ref: '#/components/schemas/TransactionTypeEnum'
+          readOnly: true
         status:
-          type: string
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
         base_currency:
           type: string
         quote_currency:
@@ -70,15 +190,55 @@ components:
           type: number
           format: double
           minimum: 0
+        quote_amount:
+          type: number
+          format: double
+          readOnly: true
+        date_created:
+          type: string
+          format: date-time
+          readOnly: true
+        date_changed:
+          type: string
+          format: date-time
+          readOnly: true
+        extras:
+          type: object
+          additionalProperties: {}
+          writeOnly: true
       required:
       - base_amount
       - base_currency
       - buyer
+      - date_changed
+      - date_created
       - payment_type
+      - quote_amount
       - quote_currency
       - seller
       - status
       - transaction_type
+      - txid
+    PaymentTypeEnum:
+      enum:
+      - CREDIT_CARD
+      - PAYPAL
+      type: string
+    StatusEnum:
+      enum:
+      - INITIALIZED
+      - REQUIRES_AUTHORIZATION
+      - SUCCEDED
+      - FAILED
+      - CANCELLED
+      type: string
+    TransactionTypeEnum:
+      enum:
+      - BUY
+      - SELL
+      - EXCHANGE
+      - MINT
+      type: string
   securitySchemes:
     basicAuth:
       type: http

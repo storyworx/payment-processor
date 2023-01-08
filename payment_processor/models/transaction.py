@@ -8,7 +8,7 @@ from payment_processor import constants
 
 class Transaction(models.Model):
     txid = models.UUIDField(
-        default=uuid.uuid4, editable=False, unique=True, primary_key=True
+        default=uuid.uuid4, editable=False, unique=True, db_index=True
     )  # models.CharField(max_length=50, blank=False, null=False, primary_key=True)
 
     external_id = models.CharField(max_length=50, blank=True, null=True, unique=True)
@@ -44,6 +44,9 @@ class Transaction(models.Model):
 
     base_amount = models.FloatField(blank=False, null=False)
     quote_amount = models.FloatField(blank=False, null=False)
+
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_changed = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = (

@@ -21,8 +21,9 @@
     </style>
   </head>
   <body>
-    {% load static %}
-    <redoc spec-url="{% static 'schema.yml' %}"></redoc>
+    <redoc
+      spec-url="static.storyworx.co/openapi/payment-processor.yaml"
+    ></redoc>
     <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
   </body>
 </html>

@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 
 load_dotenv(override=False)
 
-
+ENV = os.environ["RELEASE_STAGE"]
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,12 +29,47 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-vwh6ab#bd3c5-%&zf%o%6m%i7i23y-_5nhpt3&u@4vdu+k=o8@"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ["RELEASE_STAGE"] == "dev"
+DEBUG = ENV == "dev"
+ROLE = os.environ["ROLE"]
 
-ALLOWED_HOSTS = ["0.0.0.0", "localhost", "storyworx.co", os.environ.get("HOST")]
+HOST_IP = os.environ.get("HOST_IP", "localhost")
 
+ALLOWED_HOSTS = [
+    "0.0.0.0",
+    "localhost",
+    "storyworx.co",
+    "api.storyworx.co",
+    "payment-processor-service",
+    "payment-processor-stripe-worker-service",
+    "payment-processor-service.apps",
+    "payment-processor-stripe-worker-service.apps",
+    os.environ.get("HOST_IP"),
+    os.environ.get("POD_IP"),
+]
 
+HEALTHCHECK_APPS = []
 # Application definition
+if ROLE == "app":
+    HEALTHCHECK_APPS = [
+        "health_check",
+        "health_check.db",
+        "health_check.contrib.redis",
+        "health_check.contrib.celery",
+        "health_check.contrib.celery_ping",
+    ]
+elif ROLE == "runner":
+    HEALTHCHECK_APPS = [
+        "health_check",
+        "health_check.db",
+        "health_check.contrib.redis",
+        "health_check.contrib.celery",
+        "health_check.contrib.celery_ping",
+    ]
+elif ROLE == "worker":
+    HEALTHCHECK_APPS = [
+        "health_check.contrib.celery",
+        "health_check.contrib.celery_ping",
+    ]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -43,14 +78,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_filters",
     "drf_spectacular",
     "core",
     "api",
     "payment_processor",
     "rest_framework",
-]
+    "django_prometheus",
+] + HEALTHCHECK_APPS
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "core.middlewares.HealthCheckMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -59,6 +97,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -100,16 +139,25 @@ DATABASES = {
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "root": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+        # "verbose": {
+        #     "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+        #     "style": "{",
+        # },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "root",
         },
     },
-    "loggers": {
-        "": {
-            "handlers": ["console"],
-            "level": "INFO",
-        },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
     },
 }
 
@@ -147,11 +195,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
-
 STATIC_URL = "static/"
-STATIC_ROOT = ""
-
-STATICFILES_DIRS = (os.path.join("static"),)
+if ENV == "dev":
+    STATICFILES_DIRS = (STATIC_URL,)
+elif ENV == "prod":
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 
 # Default primary key field type
@@ -164,6 +212,7 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 
 SPECTACULAR_SETTINGS = {
@@ -175,7 +224,19 @@ SPECTACULAR_SETTINGS = {
     # OTHER SETTINGS
 }
 
-if os.environ["RELEASE_STAGE"] == "dev":
-    from conf.dev.settings import *
-elif os.environ["RELEASE_STAGE"] == "prod":
-    from conf.dev.settings import *
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+#         "LOCATION": "127.0.0.1:11211",
+#     }
+# }
+
+
+REDIS_HOST = os.environ.get("REDIS_HOST")
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:6379"
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_IMPORTS = ("payment_processor.tasks",)
+
+KAFKA_HOST = os.environ.get("KAFKA_HOST")
